@@ -80,9 +80,6 @@ const UserProfile = () => {
             <label className="block text-sm font-medium text-gray-400 mb-2">Preferred Currency</label>
             <select className="glass-input w-full bg-[#161925]" disabled={!isEditing}>
               <option>INR (₹)</option>
-              <option>USD ($)</option>
-              <option>EUR (€)</option>
-              <option>GBP (£)</option>
             </select>
           </div>
 

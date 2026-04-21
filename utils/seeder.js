@@ -39,7 +39,7 @@ const hotels = [
     pricePerNight: 40000,
     amenities: ['Pool', 'Spa', 'Free WiFi', 'Lake View', 'Palace Tour'],
     starRating: 5,
-    images: ['https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Taj_Lake_Palace_Udaipur_%284824367357%29.jpg/1000px-Taj_Lake_Palace_Udaipur_%284824367357%29.jpg']
+    images: ['/images/hotels/Taj Lake Palace.avif']
   },
   {
     name: 'Trident Udaipur',
@@ -49,7 +49,7 @@ const hotels = [
     pricePerNight: 10000,
     amenities: ['Pool', 'Free WiFi', 'Restaurant', 'Garden View'],
     starRating: 4,
-    images: ['https://images.unsplash.com/photo-1542314841-3eb2c5db4e96?auto=format&fit=crop&w=1000']
+    images: ['/images/hotels/Trident Udaipur.jpg']
   },
   {
     name: 'Hotel Udai Niwas',
@@ -59,7 +59,7 @@ const hotels = [
     pricePerNight: 2500,
     amenities: ['Free WiFi', 'Restaurant', 'City View'],
     starRating: 3,
-    images: ['https://images.unsplash.com/photo-1590447158019-883d8d5f8bc7?auto=format&fit=crop&w=1000']
+    images: ['/images/hotels/Hotel Udai Niwas.webp']
   },
   // Manali
   {
@@ -70,7 +70,7 @@ const hotels = [
     pricePerNight: 18000,
     amenities: ['Pool', 'Spa', 'Mountain View', 'Fireplace', 'Gym'],
     starRating: 5,
-    images: ['https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Himalayan_resort.jpg/1000px-Himalayan_resort.jpg']
+    images: ['/images/hotels/The Himalayan.jpg']
   },
   {
     name: 'Solang Valley Resort',
@@ -80,7 +80,7 @@ const hotels = [
     pricePerNight: 8000,
     amenities: ['Free WiFi', 'Mountain View', 'Restaurant', 'Adventure Desk'],
     starRating: 4,
-    images: ['https://images.unsplash.com/photo-1510798831971-661eb04b3739?auto=format&fit=crop&w=1000']
+    images: ['/images/hotels/Solang Valley Resort.jpg']
   },
   {
     name: 'Hotel Mountain Face',
@@ -90,7 +90,7 @@ const hotels = [
     pricePerNight: 2000,
     amenities: ['Free WiFi', 'Restaurant', 'Mountain View'],
     starRating: 3,
-    images: ['https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=1000']
+    images: ['/images/hotels/Hotel Mountain Face.webp']
   },
   // Kerala
   {
@@ -101,7 +101,7 @@ const hotels = [
     pricePerNight: 25000,
     amenities: ['Private Beach', 'Infinity Pool', 'Ayurvedic Spa', 'Ocean View'],
     starRating: 5,
-    images: ['https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Kovalam_Beach.jpg/1000px-Kovalam_Beach.jpg']
+    images: ['/images/hotels/The Leela Kovalam.jpg']
   },
   {
     name: 'Taj Bekal Resort',
@@ -111,7 +111,7 @@ const hotels = [
     pricePerNight: 12000,
     amenities: ['Pool', 'Spa', 'Backwater View', 'Restaurant'],
     starRating: 4,
-    images: ['https://images.unsplash.com/photo-1574643031206-88ab1972b944?auto=format&fit=crop&w=1000']
+    images: ['/images/hotels/Taj Bekal Resort.jpg']
   },
   {
     name: 'Coconut Grove',
@@ -121,7 +121,7 @@ const hotels = [
     pricePerNight: 3000,
     amenities: ['Free WiFi', 'Restaurant', 'Local Tours'],
     starRating: 3,
-    images: ['https://images.unsplash.com/photo-1599839619722-39751411ea63?auto=format&fit=crop&w=1000']
+    images: ['/images/hotels/Coconut Grove.jpg']
   },
   // Ladakh
   {
@@ -132,7 +132,7 @@ const hotels = [
     pricePerNight: 15000,
     amenities: ['Central Heating', 'Mountain View', 'Restaurant', 'Gym'],
     starRating: 5,
-    images: ['https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Leh_Palace_%26_Namgyal_Tsemo_Gompa.jpg/1000px-Leh_Palace_%26_Namgyal_Tsemo_Gompa.jpg']
+    images: ['/images/hotels/Grand Dragon Ladakh.jpg']
   },
   {
     name: 'The Zen Ladakh',
@@ -142,7 +142,7 @@ const hotels = [
     pricePerNight: 7000,
     amenities: ['Heated Pool', 'Free WiFi', 'Restaurant'],
     starRating: 4,
-    images: ['https://images.unsplash.com/photo-1506197603052-3cc9c3a201bd?auto=format&fit=crop&w=1000']
+    images: ['/images/hotels/The Zen Ladakh.jpg']
   },
   {
     name: 'Zostel Ladakh',
@@ -152,7 +152,7 @@ const hotels = [
     pricePerNight: 1500,
     amenities: ['Free WiFi', 'Cafe', 'Common Room'],
     starRating: 3,
-    images: ['https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&w=1000']
+    images: ['/images/hotels/Zostel Ladakh.jpg']
   },
   // Goa
   {
@@ -163,7 +163,7 @@ const hotels = [
     pricePerNight: 22000,
     amenities: ['Private Beach', 'Golf', 'Spa', 'Pool'],
     starRating: 5,
-    images: ['https://images.unsplash.com/photo-1582610116397-edb318620f90?auto=format&fit=crop&w=1000']
+    images: ['/images/hotels/Taj Exotica.jpg']
   },
   {
     name: 'Grand Hyatt Goa',
@@ -173,7 +173,7 @@ const hotels = [
     pricePerNight: 9000,
     amenities: ['Pool', 'Spa', 'Free WiFi', 'Restaurant'],
     starRating: 4,
-    images: ['https://upload.wikimedia.org/wikipedia/commons/thumb/1/1c/Goa_Marriott_Resort_%26_Spa.jpg/1000px-Goa_Marriott_Resort_%26_Spa.jpg']
+    images: ['/images/hotels/Grand Hyatt Goa.jpg']
   },
   {
     name: 'Calangute Residency',
@@ -183,7 +183,7 @@ const hotels = [
     pricePerNight: 2200,
     amenities: ['Beachfront', 'Restaurant', 'Free WiFi'],
     starRating: 3,
-    images: ['https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=1000']
+    images: ['/images/hotels/Calangute Residency.jpg']
   },
   // Jammu & Kashmir
   {
@@ -194,7 +194,7 @@ const hotels = [
     pricePerNight: 20000,
     amenities: ['Indoor Pool', 'Spa', 'Skiing', 'Mountain View'],
     starRating: 5,
-    images: ['https://upload.wikimedia.org/wikipedia/commons/thumb/e/e9/Khyber_Himalayan_Resort_%26_Spa_Gulmarg.jpg/800px-Khyber_Himalayan_Resort_%26_Spa_Gulmarg.jpg']
+    images: ['/images/hotels/Khyber Resort.jpg']
   },
   {
     name: 'Vivanta Dal View',
@@ -204,7 +204,7 @@ const hotels = [
     pricePerNight: 9500,
     amenities: ['Lake View', 'Free WiFi', 'Restaurant', 'Heated Pool'],
     starRating: 4,
-    images: ['https://images.unsplash.com/photo-1566415082141-9a7da1d6bbd0?auto=format&fit=crop&w=1000']
+    images: ['/images/hotels/Vivanta Dal View.jpg']
   },
   {
     name: 'Hotel Hilltop',
@@ -214,7 +214,7 @@ const hotels = [
     pricePerNight: 2500,
     amenities: ['Free WiFi', 'Restaurant', 'Mountain View'],
     starRating: 3,
-    images: ['https://images.unsplash.com/photo-1519999482648-25049ddd37b1?auto=format&fit=crop&w=1000']
+    images: ['/images/hotels/Hotel Hilltop.avif']
   },
   // Uttar Pradesh
   {
@@ -225,7 +225,7 @@ const hotels = [
     pricePerNight: 35000,
     amenities: ['Taj Mahal View', 'Pool', 'Spa', 'Fine Dining'],
     starRating: 5,
-    images: ['https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Taj_Mahal.jpg/1000px-Taj_Mahal.jpg']
+    images: ['/images/hotels/Oberoi Amarvilas.webp']
   },
   {
     name: 'Taj Hotel Agra',
@@ -235,7 +235,7 @@ const hotels = [
     pricePerNight: 8500,
     amenities: ['Pool', 'Spa', 'Free WiFi', 'Restaurant'],
     starRating: 4,
-    images: ['https://images.unsplash.com/photo-1585506942812-e72e4d78b0d1?auto=format&fit=crop&w=1000']
+    images: ['/images/hotels/Taj Hotel Agra.jpg']
   },
   {
     name: 'Hotel Taj Resorts',
@@ -245,7 +245,7 @@ const hotels = [
     pricePerNight: 2000,
     amenities: ['Rooftop Pool', 'Free WiFi', 'Restaurant'],
     starRating: 3,
-    images: ['https://images.unsplash.com/photo-1519046904884-53103b34b206?auto=format&fit=crop&w=1000']
+    images: ['/images/hotels/Hotel Taj Resorts.jpg']
   }
 ];
 

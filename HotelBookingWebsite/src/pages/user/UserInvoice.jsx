@@ -4,8 +4,8 @@ import { FaFilePdf, FaEnvelope } from 'react-icons/fa';
 
 const UserInvoice = () => {
   const invoices = [
-    { id: 'REC-2026-902', hotel: 'Oceanview Superior Resort', date: 'Oct 15, 2026', amount: '$2,805.00', status: 'Paid' },
-    { id: 'REC-2025-144', hotel: 'Grand Plaza Hotel', date: 'Dec 05, 2025', amount: '$420.00', status: 'Paid' }
+    { id: 'REC-2026-902', hotel: 'Oceanview Superior Resort', date: 'Oct 15, 2026', amount: '₹2,805.00', status: 'Paid' },
+    { id: 'REC-2025-144', hotel: 'Grand Plaza Hotel', date: 'Dec 05, 2025', amount: '₹420.00', status: 'Paid' }
   ];
 
   return (
@@ -35,12 +35,12 @@ const UserInvoice = () => {
                   <td className="p-5 text-gray-400">{inv.date}</td>
                   <td className="p-5 text-white font-bold">{inv.amount}</td>
                   <td className="p-5 text-right flex justify-end gap-3">
-                     <button className="bg-hotel-gold/10 text-hotel-gold hover:bg-hotel-gold hover:text-black transition-colors px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-2">
-                       <FaEnvelope /> Email File
-                     </button>
-                     <button className="bg-white/10 text-white hover:bg-white hover:text-black transition-colors px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-2">
-                       <FaFilePdf /> PDF
-                     </button>
+                    <button className="bg-hotel-gold/10 text-hotel-gold hover:bg-hotel-gold hover:text-black transition-colors px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-2">
+                      <FaEnvelope /> Email File
+                    </button>
+                    <button className="bg-white/10 text-white hover:bg-white hover:text-black transition-colors px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-2">
+                      <FaFilePdf /> PDF
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -48,11 +48,11 @@ const UserInvoice = () => {
           </table>
         </div>
       </div>
-      
+
       {invoices.length === 0 && (
-         <div className="text-center py-20 text-gray-500">
-            <p>You have no past invoices yet. Time to book your first getaway!</p>
-         </div>
+        <div className="text-center py-20 text-gray-500">
+          <p>You have no past invoices yet. Time to book your first getaway!</p>
+        </div>
       )}
     </div>
   );

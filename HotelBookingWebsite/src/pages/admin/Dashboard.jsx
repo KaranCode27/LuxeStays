@@ -32,10 +32,41 @@ const Dashboard = () => {
   const bookings = bookingsResponse?.data || [];
   const users = usersResponse?.data || [];
 
-  const totalRevenue = bookings.reduce((acc, b) => acc + (b.totalPrice || 0), 0);
-  const activeBookings = bookings.filter(b => (b.status || '').toLowerCase() === 'confirmed').length;
+  const confirmedBookings = bookings.filter(b => (b.status || '').toLowerCase() === 'confirmed');
+  const totalRevenue = confirmedBookings.reduce((acc, b) => acc + (b.totalPrice || 0), 0);
+  const activeBookings = confirmedBookings.length;
   const totalGuests = users.length;
-  const recentBookings = [...bookings].reverse().slice(0, 4);
+  
+  // Filter out any booking missing crucial relations instead of falling back to 'Guest'/'Hotel'
+  const validBookings = bookings.filter(b => b.userRef && b.userRef.name && b.hotelRef && b.hotelRef.name);
+  const recentBookings = [...validBookings].reverse().slice(0, 4);
+
+  // Dynamic Occupancy
+  const occupancyRate = bookings.length > 0 ? Math.round((activeBookings / bookings.length) * 100) : 0;
+
+  // Dynamic Chart Data
+  const monthlyRevenue = new Array(12).fill(0);
+  confirmedBookings.forEach(b => {
+    if (b.createdAt) {
+       const month = new Date(b.createdAt).getMonth();
+       monthlyRevenue[month] += (b.totalPrice || 0);
+    }
+  });
+  
+  const maxRev = Math.max(...monthlyRevenue, 1); // Avoid division by zero
+  const maxRevFormatted = maxRev > 100000 ? `₹${(maxRev/100000).toFixed(1)}L` : `₹${maxRev.toLocaleString()}`;
+  const midRevFormatted = maxRev > 100000 ? `₹${(maxRev/200000).toFixed(1)}L` : `₹${Math.round(maxRev/2).toLocaleString()}`;
+
+  const chartData = [
+    { m: 'Jan', val: monthlyRevenue[0] }, { m: 'Feb', val: monthlyRevenue[1] }, { m: 'Mar', val: monthlyRevenue[2] },
+    { m: 'Apr', val: monthlyRevenue[3] }, { m: 'May', val: monthlyRevenue[4] }, { m: 'Jun', val: monthlyRevenue[5] },
+    { m: 'Jul', val: monthlyRevenue[6] }, { m: 'Aug', val: monthlyRevenue[7] }, { m: 'Sep', val: monthlyRevenue[8] },
+    { m: 'Oct', val: monthlyRevenue[9] }, { m: 'Nov', val: monthlyRevenue[10] }, { m: 'Dec', val: monthlyRevenue[11] }
+  ].map(d => ({
+    m: d.m,
+    h: `${Math.max(2, (d.val / maxRev) * 100)}%`, // At least 2% bar to show month exists
+    raw: d.val
+  }));
 
   if (isLoadingBookings || isLoadingUsers) {
     return (
@@ -74,30 +105,24 @@ const Dashboard = () => {
         <div className="h-64 flex items-end gap-2 sm:gap-4 md:gap-8 justify-between pt-10 border-b border-white/10 pb-4 relative">
           {/* Y Axis Mock */}
           <div className="absolute left-0 top-0 h-full flex flex-col justify-between text-xs text-gray-500 pb-4">
-             <span>₹1.5Cr</span>
-             <span>₹1Cr</span>
-             <span>₹50L</span>
+             <span>{maxRevFormatted}</span>
+             <span>{midRevFormatted}</span>
              <span>₹0</span>
           </div>
-          <div className="w-8"></div> {/* Spacer for Y axis */}
+          <div className="w-12"></div> {/* Spacer for Y axis */}
           
-          {[
-             { m: 'Jan', h: '40%' }, { m: 'Feb', h: '55%' }, { m: 'Mar', h: '70%' },
-             { m: 'Apr', h: '65%' }, { m: 'May', h: '85%' }, { m: 'Jun', h: '100%'},
-             { m: 'Jul', h: '90%' }, { m: 'Aug', h: '80%' }, { m: 'Sep', h: '60%' },
-             { m: 'Oct', h: '75%' }, { m: 'Nov', h: '50%' }, { m: 'Dec', h: '95%' }
-          ].map((bar, i) => (
+          {chartData.map((bar, i) => (
              <div key={i} className="flex-1 flex flex-col items-center group relative">
                 {/* Tooltip */}
-                <div className="absolute -top-10 bg-hotel-gold text-black text-xs font-bold px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                  {bar.h} Rev
+                <div className="absolute -top-10 bg-hotel-gold text-black text-xs font-bold px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity z-10 whitespace-nowrap">
+                  ₹{bar.raw?.toLocaleString()}
                 </div>
                 {/* Bar */}
                 <motion.div 
                    initial={{ height: 0 }}
                    animate={{ height: bar.h }}
                    transition={{ duration: 1, delay: i * 0.05 }}
-                   className="w-full bg-hotel-gold/80 hover:bg-hotel-gold rounded-t-md transition-colors"
+                   className={`w-full ${bar.raw > 0 ? 'bg-hotel-gold/80 hover:bg-hotel-gold' : 'bg-white/5'} rounded-t-md transition-colors`}
                 ></motion.div>
                 <span className="text-xs text-gray-400 mt-2">{bar.m}</span>
              </div>
@@ -119,10 +144,13 @@ const Dashboard = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
+                {recentBookings.length === 0 && (
+                   <tr><td colSpan="4" className="py-6 text-center text-gray-500">No valid recent bookings found.</td></tr>
+                )}
                 {recentBookings.map((booking, idx) => (
                   <tr key={idx}>
-                    <td className="py-4 text-gray-200">{booking.userRef?.name || 'Guest'}</td>
-                    <td className="py-4 text-gray-400">{booking.hotelRef?.name || 'Hotel'}</td>
+                    <td className="py-4 text-gray-200">{booking.userRef.name}</td>
+                    <td className="py-4 text-gray-400">{booking.hotelRef.name}</td>
                     <td className="py-4 font-medium text-white">₹{booking.totalPrice?.toLocaleString()}</td>
                     <td className="py-4">
                       <span className={`px-2 py-1 text-xs rounded-full ${
@@ -146,7 +174,7 @@ const Dashboard = () => {
           <div className="w-48 h-48 rounded-full border-8 border-hotel-gold/20 relative flex items-center justify-center">
              <div className="absolute inset-0 rounded-full border-8 border-hotel-gold" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 100%, 0 100%, 0 0)', transform: 'rotate(45deg)'}}></div>
              <div className="text-center">
-               <span className="text-4xl font-bold text-white">78%</span>
+               <span className="text-4xl font-bold text-white">{occupancyRate}%</span>
                <p className="text-xs text-gray-400 mt-1">Overall</p>
              </div>
           </div>

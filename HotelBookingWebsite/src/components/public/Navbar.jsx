@@ -26,9 +26,10 @@ const Navbar = () => {
 
   const links = [
     { name: 'Hotel', path: '/search' },
-    { name: 'FAQ', path: '/faq' },
     { name: 'About Us', path: '/about' },
     { name: 'Contact Us', path: '/contact' },
+    { name: 'FAQ', path: '/faq' },
+    { name: 'Terms', path: '/terms' },
   ];
 
   return (

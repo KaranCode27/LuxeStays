@@ -12,20 +12,42 @@ const AddHotel = () => {
   const [description, setDescription] = useState('');
   const [starRating, setStarRating] = useState('5');
   const [pricePerNight, setPricePerNight] = useState('');
+  const [image, setImage] = useState(null);
   const [message, setMessage] = useState(null);
 
-  const [createHotel, { isLoading, isSuccess, isError, error }] = useCreateHotelMutation();
+  const [createHotel, { isLoading }] = useCreateHotelMutation();
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+         setMessage("File size is too large. Please select an image under 5MB.");
+         return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImage(reader.result);
+        setMessage(null);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const submitHandler = async (e) => {
     e.preventDefault();
     try {
-      await createHotel({
+      const hotelData = {
         name,
         location,
         description,
         starRating: Number(starRating),
         pricePerNight: Number(pricePerNight),
-      }).unwrap();
+      };
+      if (image) {
+        hotelData.images = [image];
+      }
+
+      await createHotel(hotelData).unwrap();
       navigate('/admin/hotels');
     } catch (err) {
       setMessage(err?.data?.message || err.error);
@@ -77,6 +99,18 @@ const AddHotel = () => {
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">Base Nightly Price (₹)</label>
               <input type="number" value={pricePerNight} onChange={(e) => setPricePerNight(e.target.value)} required className="glass-input w-full" placeholder="Ex: 500" />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">Upload Hero Image</label>
+            <div className="w-full border-2 border-dashed border-white/20 rounded-xl overflow-hidden relative group cursor-pointer h-48 bg-black/20 flex items-center justify-center">
+               {image && <img src={image} alt="Preview" className="w-full h-full object-cover group-hover:opacity-40 transition-opacity" />}
+               <div className={`absolute inset-0 flex flex-col items-center justify-center transition-opacity pointer-events-none ${image ? 'opacity-0 group-hover:opacity-100 bg-black/40' : 'opacity-100 text-gray-400'}`}>
+                  <FaUpload className={`text-3xl mb-2 ${image ? 'text-white' : 'text-gray-400'}`} />
+                  <p className={`font-bold text-sm tracking-wide ${image ? 'text-white' : 'text-gray-400'}`}>{image ? 'Change Photo' : 'Click to Upload Photo'}</p>
+               </div>
+               <input type="file" accept="image/*" onChange={handleImageChange} className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" />
             </div>
           </div>
 

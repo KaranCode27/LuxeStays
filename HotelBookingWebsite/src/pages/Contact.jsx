@@ -1,8 +1,52 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FaMapMarkerAlt, FaPhoneAlt, FaEnvelope } from 'react-icons/fa';
+import { useSelector } from 'react-redux';
+import { useSubmitContactMutation } from '../slices/contactApiSlice';
+import toast from 'react-hot-toast';
 
 const Contact = () => {
+  const { userInfo } = useSelector((state) => state.auth);
+  const [submitContact, { isLoading }] = useSubmitContactMutation();
+
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
+  const [subject, setSubject] = useState('General Inquiry');
+  const [message, setMessage] = useState('');
+
+  useEffect(() => {
+    if (userInfo) {
+      const names = userInfo.name ? userInfo.name.split(' ') : ['', ''];
+      setFirstName(names[0] || '');
+      setLastName(names.slice(1).join(' ') || '');
+      setEmail(userInfo.email || '');
+    }
+  }, [userInfo]);
+
+  const submitHandler = async (e) => {
+    e.preventDefault();
+    if (!firstName || !email || !subject || !message) {
+      toast.error('Please fill out all required fields');
+      return;
+    }
+
+    try {
+      await submitContact({
+        name: `${firstName} ${lastName}`.trim(),
+        email,
+        subject,
+        message,
+      }).unwrap();
+      
+      toast.success('Message sent successfully! Our team will contact you soon.');
+      setMessage('');
+      setSubject('General Inquiry');
+    } catch (err) {
+      toast.error(err?.data?.message || err.error || 'Failed to send message');
+    }
+  };
+
   return (
     <div className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
       <motion.div
@@ -68,26 +112,26 @@ const Contact = () => {
           className="lg:col-span-2 glass-panel p-8 md:p-10 rounded-2xl"
         >
           <h3 className="text-2xl font-bold text-white mb-6">Send us a message</h3>
-          <form className="space-y-6">
+          <form onSubmit={submitHandler} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-400 mb-2">First Name</label>
-                <input type="text" className="glass-input w-full" placeholder="First Name" />
+                <input type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)} required className="glass-input w-full" placeholder="First Name" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-400 mb-2">Last Name</label>
-                <input type="text" className="glass-input w-full" placeholder="Last Name" />
+                <input type="text" value={lastName} onChange={(e) => setLastName(e.target.value)} className="glass-input w-full" placeholder="Last Name" />
               </div>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-400 mb-2">Email Address</label>
-              <input type="email" className="glass-input w-full" placeholder="john@gmail.com" />
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="glass-input w-full" placeholder="john@gmail.com" />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-400 mb-2">Subject</label>
-              <select className="glass-input w-full bg-[#161925] [&>option]:bg-[#161925]">
+              <select value={subject} onChange={(e) => setSubject(e.target.value)} required className="glass-input w-full bg-[#161925] [&>option]:bg-[#161925]">
                 <option>General Inquiry</option>
                 <option>Booking Modification</option>
                 <option>Cancellation/Refund</option>
@@ -97,10 +141,12 @@ const Contact = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-400 mb-2">Message</label>
-              <textarea rows="5" className="glass-input w-full resize-none" placeholder="How can we help you today?"></textarea>
+              <textarea rows="5" value={message} onChange={(e) => setMessage(e.target.value)} required className="glass-input w-full resize-none" placeholder="How can we help you today?"></textarea>
             </div>
 
-            <button type="button" className="btn-primary w-full md:w-auto px-10">Send Message</button>
+            <button type="submit" disabled={isLoading} className="btn-primary w-full md:w-auto px-10">
+              {isLoading ? 'Sending...' : 'Send Message'}
+            </button>
           </form>
         </motion.div>
       </div>

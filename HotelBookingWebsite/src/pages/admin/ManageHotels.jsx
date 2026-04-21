@@ -1,11 +1,13 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { FaPlus, FaEdit, FaTrash, FaSpinner } from 'react-icons/fa';
 import { useGetHotelsQuery, useDeleteHotelMutation } from '../../slices/hotelsApiSlice';
 import toast from 'react-hot-toast';
 
 const ManageHotels = () => {
-  const { data: hotelsResponse, isLoading, refetch } = useGetHotelsQuery();
+  const navigate = useNavigate();
+  const { data: hotelsResponse, isLoading, refetch } = useGetHotelsQuery({ limit: 100 });
   const hotels = hotelsResponse?.data || [];
   
   const [deleteHotel] = useDeleteHotelMutation();
@@ -33,7 +35,7 @@ const ManageHotels = () => {
           <h1 className="text-3xl font-bold text-white">Manage Hotels</h1>
           <p className="text-gray-400 mt-1">Control your property catalog and availability.</p>
         </div>
-        <button className="btn-primary">
+        <button onClick={() => navigate('/admin/hotels/add')} className="btn-primary">
           <FaPlus /> Add New Hotel
         </button>
       </div>
@@ -70,7 +72,7 @@ const ManageHotels = () => {
                     </span>
                   </td>
                   <td className="p-4 flex items-center justify-end space-x-3">
-                    <button className="text-gray-400 hover:text-blue-400 transition-colors" title="Edit">
+                    <button onClick={() => navigate(`/admin/hotels/edit/${hotel._id}`)} className="text-gray-400 hover:text-blue-400 transition-colors" title="Edit">
                       <FaEdit className="text-lg" />
                     </button>
                     <button onClick={() => handleDelete(hotel._id)} className="text-gray-400 hover:text-red-400 transition-colors" title="Delete">

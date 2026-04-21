@@ -151,16 +151,16 @@ const BookingDetails = () => {
             
             <div className="space-y-3 text-sm mb-6">
               <div className="flex justify-between">
-                 <span className="text-gray-400">$850 x 3 nights</span>
-                 <span className="text-white">$2,550.00</span>
+                 <span className="text-gray-400">₹850 x 3 nights</span>
+                 <span className="text-white">₹2,550.00</span>
               </div>
               <div className="flex justify-between">
                  <span className="text-gray-400">Taxes & Resort Fees</span>
-                 <span className="text-white">$255.00</span>
+                 <span className="text-white">₹255.00</span>
               </div>
               <div className="flex justify-between">
                  <span className="text-gray-400">VIP Discount applied</span>
-                 <span className="text-green-400">-$0.00</span>
+                 <span className="text-green-400">-₹0.00</span>
               </div>
               
               <div className="flex justify-between border-t border-white/10 pt-4 mt-4">
