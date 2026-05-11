@@ -1,71 +1,99 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { FaCheckCircle, FaSpinner, FaTimesCircle } from 'react-icons/fa';
 import { useCreateBookingMutation } from '../slices/bookingsApiSlice';
+import { useCreateRazorpayOrderMutation, useVerifyRazorpayPaymentMutation } from '../slices/paymentsApiSlice';
 
 const Payment = () => {
   const navigate = useNavigate();
   const { state } = useLocation();
-  const [status, setStatus] = useState('razorpay_modal');
+  const [status, setStatus] = useState('processing');
+  
   const [createBooking] = useCreateBookingMutation();
+  const [createRazorpayOrder] = useCreateRazorpayOrderMutation();
+  const [verifyRazorpayPayment] = useVerifyRazorpayPaymentMutation();
 
-  const processPayment = async () => {
+  const handleRazorpayPayment = async () => {
     if (!state?.bookingPayload) {
       setStatus('error');
       return;
     }
+
     try {
-      setStatus('processing');
-      await createBooking(state.bookingPayload).unwrap();
-      setStatus('success');
+      // 1. Create the booking in DB
+      const bookingRes = await createBooking(state.bookingPayload).unwrap();
+      const bookingId = bookingRes.data._id;
+
+      // 2. Create Razorpay order
+      const orderRes = await createRazorpayOrder({ bookingId }).unwrap();
+      const order = orderRes.data;
+
+      // 3. Configure Razorpay options
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_replace_me',
+        amount: order.amount,
+        currency: order.currency,
+        name: 'LuxeStays Hotel',
+        description: 'Hotel Booking Payment',
+        order_id: order.id,
+        handler: async function (response) {
+          try {
+            setStatus('verifying');
+            // 4. Verify Payment on Backend
+            await verifyRazorpayPayment({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              bookingId,
+            }).unwrap();
+            
+            setStatus('success');
+          } catch (err) {
+            console.error('Payment verification failed:', err);
+            setStatus('error');
+          }
+        },
+        prefill: {
+          name: state.bookingPayload.guestName || 'Guest User',
+        },
+        theme: {
+          color: '#3395FF',
+        },
+      };
+
+      // 5. Open Razorpay Checkout modal
+      const rzp1 = new window.Razorpay(options);
+      rzp1.on('payment.failed', function (response) {
+        console.error('Payment failed:', response.error);
+        setStatus('error');
+      });
+      rzp1.open();
+
     } catch (err) {
-      console.error('Booking failed:', err);
+      console.error('Booking/Payment flow failed:', err);
       setStatus('error');
     }
   };
 
   useEffect(() => {
-    if (status === 'razorpay_modal') {
-      const timer = setTimeout(() => {
-         processPayment();
-      }, 4000);
-      return () => clearTimeout(timer);
+    if (status === 'processing') {
+      handleRazorpayPayment();
     }
-  }, [status, createBooking, state]);
+    // Cleanup body overflow just in case Razorpay leaves it hidden
+    if (status === 'success' || status === 'error') {
+      document.body.style.overflow = 'unset';
+    }
+  }, [status]);
+
+  useEffect(() => {
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, []);
 
   return (
       <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative">
-        
-        {/* Razorpay Mock Modal */}
-        {status === 'razorpay_modal' && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm">
-             <motion.div 
-               initial={{ opacity: 0, scale: 0.9, y: 20 }}
-               animate={{ opacity: 1, scale: 1, y: 0 }}
-               className="bg-white rounded-lg shadow-2xl relative overflow-hidden flex flex-col w-[350px] sm:w-[400px] h-[500px]"
-             >
-               <div className="bg-[#3395FF] p-6 text-white text-center relative overflow-hidden">
-                  <div className="absolute top-4 right-[-30px] bg-red-500 text-white text-[10px] font-bold px-10 py-1 flex items-center justify-center rotate-45">TEST</div>
-                  <h2 className="text-xl font-bold mb-1 text-white">LuxeStays Hotel</h2>
-                  <p className="text-blue-100 text-sm">Secure Booking Payment</p>
-                  <div className="text-3xl font-bold mt-4 text-white">₹{state?.bookingPayload?.totalPrice ? (state.bookingPayload.totalPrice).toFixed(2) : "0.00"}</div>
-               </div>
-               
-               <div className="flex-1 flex flex-col items-center justify-center p-8 bg-gray-50 text-gray-800">
-                  <FaSpinner className="animate-spin text-4xl text-[#3395FF] mb-4" />
-                  <p className="font-bold text-lg text-gray-800">Authenticating...</p>
-                  <p className="text-sm text-gray-500 mt-2 text-center">Please do not refresh the page or press the back button.</p>
-               </div>
- 
-               <div className="bg-white p-4 border-t border-gray-200 flex justify-center items-center gap-2">
-                  <span className="text-xs text-gray-400 font-medium tracking-wide">Secured by</span>
-                  <div className="flex items-center text-gray-800 font-bold text-sm tracking-tight"><span className="text-[#3395FF] mr-[1px]">Razor</span>pay</div>
-               </div>
-             </motion.div>
-          </div>
-        )}
-
         <motion.div 
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -76,6 +104,12 @@ const Payment = () => {
               <FaSpinner className="animate-spin text-5xl text-[#3395FF] mb-6" />
               <h2 className="text-2xl font-bold text-white mb-2">Connecting to Razorpay...</h2>
               <p className="text-gray-400">Authenticating secure transaction. Please do not refresh.</p>
+            </div>
+          ) : status === 'verifying' ? (
+             <div className="flex flex-col items-center py-8">
+              <FaSpinner className="animate-spin text-5xl text-[#3395FF] mb-6" />
+              <h2 className="text-2xl font-bold text-white mb-2">Verifying Payment...</h2>
+              <p className="text-gray-400">Please wait while we confirm your payment.</p>
             </div>
           ) : status === 'error' ? (
             <motion.div 

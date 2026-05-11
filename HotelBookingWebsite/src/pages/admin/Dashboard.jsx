@@ -26,6 +26,7 @@ const StatCard = ({ title, value, icon: Icon, trend, isPositive }) => (
 );
 
 const Dashboard = () => {
+  const [chartView, setChartView] = React.useState('weekly');
   const { data: bookingsResponse, isLoading: isLoadingBookings } = useGetBookingsQuery();
   const { data: usersResponse, isLoading: isLoadingUsers } = useGetUsersQuery();
 
@@ -44,27 +45,36 @@ const Dashboard = () => {
   // Dynamic Occupancy
   const occupancyRate = bookings.length > 0 ? Math.round((activeBookings / bookings.length) * 100) : 0;
 
-  // Dynamic Chart Data
+  // Dynamic Chart Data Toggle
+  const weeklyRevenue = new Array(7).fill(0);
   const monthlyRevenue = new Array(12).fill(0);
+
   confirmedBookings.forEach(b => {
     if (b.createdAt) {
-       const month = new Date(b.createdAt).getMonth();
+       const d = new Date(b.createdAt);
+       // Weekly grouping
+       let day = d.getDay();
+       day = day === 0 ? 6 : day - 1; // Map Sun(0) to 6, Mon(1) to 0, etc.
+       weeklyRevenue[day] += (b.totalPrice || 0);
+       
+       // Monthly grouping
+       const month = d.getMonth();
        monthlyRevenue[month] += (b.totalPrice || 0);
     }
   });
   
-  const maxRev = Math.max(...monthlyRevenue, 1); // Avoid division by zero
+  const activeRevenueArray = chartView === 'weekly' ? weeklyRevenue : monthlyRevenue;
+  const maxRev = Math.max(...activeRevenueArray, 1); // Avoid division by zero
   const maxRevFormatted = maxRev > 100000 ? `₹${(maxRev/100000).toFixed(1)}L` : `₹${maxRev.toLocaleString()}`;
   const midRevFormatted = maxRev > 100000 ? `₹${(maxRev/200000).toFixed(1)}L` : `₹${Math.round(maxRev/2).toLocaleString()}`;
 
-  const chartData = [
-    { m: 'Jan', val: monthlyRevenue[0] }, { m: 'Feb', val: monthlyRevenue[1] }, { m: 'Mar', val: monthlyRevenue[2] },
-    { m: 'Apr', val: monthlyRevenue[3] }, { m: 'May', val: monthlyRevenue[4] }, { m: 'Jun', val: monthlyRevenue[5] },
-    { m: 'Jul', val: monthlyRevenue[6] }, { m: 'Aug', val: monthlyRevenue[7] }, { m: 'Sep', val: monthlyRevenue[8] },
-    { m: 'Oct', val: monthlyRevenue[9] }, { m: 'Nov', val: monthlyRevenue[10] }, { m: 'Dec', val: monthlyRevenue[11] }
-  ].map(d => ({
+  const rawDisplayMap = chartView === 'weekly' 
+    ? [ { m: 'Mon', val: weeklyRevenue[0] }, { m: 'Tue', val: weeklyRevenue[1] }, { m: 'Wed', val: weeklyRevenue[2] }, { m: 'Thu', val: weeklyRevenue[3] }, { m: 'Fri', val: weeklyRevenue[4] }, { m: 'Sat', val: weeklyRevenue[5] }, { m: 'Sun', val: weeklyRevenue[6] } ]
+    : [ { m: 'Jan', val: monthlyRevenue[0] }, { m: 'Feb', val: monthlyRevenue[1] }, { m: 'Mar', val: monthlyRevenue[2] }, { m: 'Apr', val: monthlyRevenue[3] }, { m: 'May', val: monthlyRevenue[4] }, { m: 'Jun', val: monthlyRevenue[5] }, { m: 'Jul', val: monthlyRevenue[6] }, { m: 'Aug', val: monthlyRevenue[7] }, { m: 'Sep', val: monthlyRevenue[8] }, { m: 'Oct', val: monthlyRevenue[9] }, { m: 'Nov', val: monthlyRevenue[10] }, { m: 'Dec', val: monthlyRevenue[11] } ];
+
+  const chartData = rawDisplayMap.map(d => ({
     m: d.m,
-    h: `${Math.max(2, (d.val / maxRev) * 100)}%`, // At least 2% bar to show month exists
+    h: `${Math.max(2, (d.val / maxRev) * 100)}%`,
     raw: d.val
   }));
 
@@ -97,9 +107,9 @@ const Dashboard = () => {
       <div className="glass-panel p-6 rounded-2xl mb-8">
         <div className="flex justify-between items-center mb-6">
            <h3 className="text-lg font-semibold text-white">Revenue Analytics</h3>
-           <select className="bg-black/30 text-xs text-hotel-gold border border-hotel-gold/30 rounded p-1">
-             <option>This Year</option>
-             <option>Last Year</option>
+           <select value={chartView} onChange={(e) => setChartView(e.target.value)} className="bg-black/30 text-xs text-hotel-gold border border-hotel-gold/30 rounded p-1 cursor-pointer outline-none">
+             <option value="weekly">This Week (Daily)</option>
+             <option value="monthly">This Year (Monthly)</option>
            </select>
         </div>
         <div className="h-64 flex items-end gap-2 sm:gap-4 md:gap-8 justify-between pt-10 border-b border-white/10 pb-4 relative">
@@ -112,7 +122,7 @@ const Dashboard = () => {
           <div className="w-12"></div> {/* Spacer for Y axis */}
           
           {chartData.map((bar, i) => (
-             <div key={i} className="flex-1 flex flex-col items-center group relative">
+             <div key={i} className="flex-1 flex flex-col items-center group relative h-full justify-end">
                 {/* Tooltip */}
                 <div className="absolute -top-10 bg-hotel-gold text-black text-xs font-bold px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity z-10 whitespace-nowrap">
                   ₹{bar.raw?.toLocaleString()}

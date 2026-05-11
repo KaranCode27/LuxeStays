@@ -24,14 +24,19 @@ const Booking = () => {
     specialRequests: ''
   });
 
-  // Initialize to plausible default future dates
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  const nextWeek = new Date();
-  nextWeek.setDate(nextWeek.getDate() + 4);
+  // Correctly get local dates to avoid timezone UTC shift issues
+  const getLocalDateString = (offsetDays = 0) => {
+    const date = new Date();
+    date.setDate(date.getDate() + offsetDays);
+    const tzOffsetMs = date.getTimezoneOffset() * 60000;
+    return new Date(date.getTime() - tzOffsetMs).toISOString().split('T')[0];
+  };
 
-  const [checkInDate, setCheckInDate] = useState(tomorrow.toISOString().split('T')[0]);
-  const [checkOutDate, setCheckOutDate] = useState(nextWeek.toISOString().split('T')[0]);
+  const today = getLocalDateString(0);
+  const tomorrow = getLocalDateString(1);
+  
+  const [checkInDate, setCheckInDate] = useState(today);
+  const [checkOutDate, setCheckOutDate] = useState(tomorrow);
 
   const { data: hotelResponse, isLoading: isHotelLoading } = useGetHotelDetailsQuery(id);
   const { data: roomsData, isLoading: isRoomsLoading } = useGetHotelRoomsQuery(id);
@@ -60,7 +65,7 @@ const Booking = () => {
   };
   const nights = calculateNights();
 
-  const basePrice = pricePerNight * nights;
+  const basePrice = pricePerNight * nights * Number(formData.guests);
   const tax = basePrice * 0.1;
   const totalPrice = basePrice + tax;
 
@@ -98,8 +103,18 @@ const Booking = () => {
                 <input
                   type="date"
                   value={checkInDate}
-                  onChange={(e) => setCheckInDate(e.target.value)}
-                  className="glass-input w-full text-white"
+                  onChange={(e) => {
+                    let newDate = e.target.value;
+                    if (newDate < today) newDate = today; // Strict JS clamp
+                    setCheckInDate(newDate);
+                    // Ensure checkout is strictly at least checkin date
+                    if (newDate >= checkOutDate) {
+                        const nextDay = new Date(new Date(newDate).getTime() + 86400000).toISOString().split('T')[0];
+                        setCheckOutDate(nextDay); 
+                    }
+                  }}
+                  min={today}
+                  className="glass-input w-full text-white cursor-text"
                 />
               </div>
               <div>
@@ -107,9 +122,17 @@ const Booking = () => {
                 <input
                   type="date"
                   value={checkOutDate}
-                  onChange={(e) => setCheckOutDate(e.target.value)}
-                  min={checkInDate}
-                  className="glass-input w-full text-white"
+                  onChange={(e) => {
+                    let newDate = e.target.value;
+                    const minOut = checkInDate || today;
+                    if (newDate <= minOut) {
+                         const nextDay = new Date(new Date(minOut).getTime() + 86400000).toISOString().split('T')[0];
+                         newDate = nextDay; 
+                    }
+                    setCheckOutDate(newDate);
+                  }}
+                  min={checkInDate ? new Date(new Date(checkInDate).getTime() + 86400000).toISOString().split('T')[0] : tomorrow}
+                  className="glass-input w-full text-white cursor-text"
                 />
               </div>
               <div>
@@ -218,7 +241,7 @@ const Booking = () => {
 
             <div className="space-y-3 text-sm mb-6">
               <div className="flex justify-between">
-                <span className="text-gray-400">₹{pricePerNight.toFixed(2)} x {nights} nights</span>
+                <span className="text-gray-400">₹{pricePerNight.toFixed(2)} x {nights} night{nights > 1 && 's'} x {formData.guests} guest{formData.guests > 1 && 's'}</span>
                 <span className="text-white">₹{basePrice.toFixed(2)}</span>
               </div>
               <div className="flex justify-between">

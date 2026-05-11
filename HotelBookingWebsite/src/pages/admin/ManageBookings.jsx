@@ -5,6 +5,7 @@ import { useGetBookingsQuery, useUpdateBookingStatusMutation } from '../../slice
 import toast from 'react-hot-toast';
 
 const ManageBookings = () => {
+  const [selectedBooking, setSelectedBooking] = React.useState(null);
   const { data: bookingsResponse, isLoading, refetch } = useGetBookingsQuery();
   const bookings = bookingsResponse?.data || [];
   
@@ -83,7 +84,7 @@ const ManageBookings = () => {
                     </span>
                   </td>
                   <td className="p-4 flex items-center justify-end space-x-3">
-                    <button className="text-gray-400 hover:text-white transition-colors" title="View Details">
+                    <button onClick={() => setSelectedBooking(booking)} className="text-gray-400 hover:text-white transition-colors" title="View Details">
                       <FaEye className="text-lg" />
                     </button>
                     {(booking.status === 'pending' || booking.status === 'Pending') && (
@@ -102,6 +103,52 @@ const ManageBookings = () => {
         </div>
         )}
       </div>
+
+      {selectedBooking && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+          <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-[#161925] border border-hotel-gold/30 rounded-2xl p-6 sm:p-8 max-w-lg w-full relative">
+            <button onClick={() => setSelectedBooking(null)} className="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors">
+              <FaTimesCircle className="text-2xl" />
+            </button>
+            <h2 className="text-2xl font-bold text-white mb-6">Booking Details</h2>
+            
+            <div className="space-y-4 text-sm">
+               <div className="flex justify-between border-b border-white/10 pb-2">
+                 <span className="text-gray-400">Transaction ID</span>
+                 <span className="text-hotel-gold font-mono">{selectedBooking._id}</span>
+               </div>
+               <div className="flex justify-between border-b border-white/10 pb-2">
+                 <span className="text-gray-400">Primary Guest</span>
+                 <span className="text-white font-medium">{selectedBooking.guestName || selectedBooking.userRef?.name}</span>
+               </div>
+               <div className="flex justify-between border-b border-white/10 pb-2">
+                 <span className="text-gray-400">Booked Property</span>
+                 <span className="text-white font-medium">{selectedBooking.hotelRef?.name}</span>
+               </div>
+               <div className="flex justify-between border-b border-white/10 pb-2">
+                 <span className="text-gray-400">Room Number</span>
+                 <span className="text-white">{selectedBooking.roomRef?.roomNumber || 'Not assigned'}</span>
+               </div>
+               <div className="flex justify-between border-b border-white/10 pb-2">
+                 <span className="text-gray-400">Number of Guests</span>
+                 <span className="text-white">{selectedBooking.guestCount || 1} Guests</span>
+               </div>
+               <div className="flex justify-between border-b border-white/10 pb-2">
+                 <span className="text-gray-400">Duration</span>
+                 <span className="text-white">{formatDate(selectedBooking.checkInDate)} to {formatDate(selectedBooking.checkOutDate)}</span>
+               </div>
+               <div className="flex justify-between pt-2">
+                 <span className="text-gray-400">Total Charged</span>
+                 <span className="text-hotel-gold font-bold text-lg">₹{selectedBooking.totalPrice?.toLocaleString()}</span>
+               </div>
+            </div>
+            
+            <div className="mt-8 pt-6 border-t border-white/10 flex justify-end gap-4">
+              <button onClick={() => setSelectedBooking(null)} className="px-6 py-2 rounded-lg text-white font-medium hover:bg-white/5 transition-colors border border-white/20">Close Details</button>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </motion.div>
   );
 };

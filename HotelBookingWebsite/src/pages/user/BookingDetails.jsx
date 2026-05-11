@@ -4,7 +4,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { FaArrowLeft, FaDownload, FaMapMarkerAlt, FaCheckCircle, FaTimesCircle, FaSpinner } from 'react-icons/fa';
 import { useGetBookingDetailsQuery, useCancelBookingMutation } from '../../slices/bookingsApiSlice';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
+import toast from 'react-hot-toast';
 
 const BookingDetails = () => {
   const navigate = useNavigate();
@@ -35,50 +36,109 @@ const BookingDetails = () => {
 
   const downloadPDFInvoice = () => {
     if (!booking) return;
+    try {
+      const doc = new jsPDF();
+      const bookingObj = booking;
+      
+      const name = bookingObj.guestName || (bookingObj.userRef && bookingObj.userRef.name) || 'Guest';
+      const amount = `Rs. ${bookingObj.totalPrice ? bookingObj.totalPrice.toLocaleString() : 0}`;
+      const date = bookingObj.createdAt ? new Date(bookingObj.createdAt).toLocaleDateString() : 'N/A';
+      const rawId = bookingObj._id ? String(bookingObj._id) : 'UNKNOWN';
+      const transactionId = rawId.substring(0,8).toUpperCase();
+      const status = bookingObj.status ? bookingObj.status.toUpperCase() : 'PENDING';
+      const property = (bookingObj.hotelRef && bookingObj.hotelRef.name) || 'LuxeStays Property';
+      
+      // Header Background (Dark Blue)
+      doc.setFillColor(15, 23, 42); 
+      doc.rect(0, 0, 210, 45, 'F');
 
-    const doc = new jsPDF();
+      // Header Text
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(28);
+      doc.setFont('helvetica', 'bold');
+      doc.text('LUXESTAYS', 14, 25);
+      
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(200, 200, 200);
+      doc.text('Premium Hotel Booking Platform', 14, 34);
 
-    // Standard Setup
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(22);
-    doc.text("LuxeStays Official Receipt", 105, 20, { align: "center" });
+      // Right Side Header
+      doc.setTextColor(212, 175, 55); // Gold
+      doc.setFontSize(20);
+      doc.setFont('helvetica', 'bold');
+      doc.text('INVOICE / RECEIPT', 196, 25, { align: 'right' });
+      
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.text(`ID: ${transactionId}`, 196, 34, { align: 'right' });
 
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(12);
-    doc.text(`Confirmation Number: ${booking._id}`, 20, 40);
-    doc.text(`Booking Status: ${booking.status || 'Active'}`, 20, 50);
+      // Guest & Property Info Block
+      doc.setTextColor(0, 0, 0);
+      doc.setFontSize(12);
+      
+      // Left Col
+      doc.setFont('helvetica', 'bold');
+      doc.text('Billed To:', 14, 60);
+      doc.setFont('helvetica', 'normal');
+      doc.text(`${name}`, 14, 68);
+      doc.text(`Booking Date: ${date}`, 14, 76);
+      doc.text(`Status: ${status}`, 14, 84);
 
-    // Guest Info
-    doc.text(`Guest: ${booking.userRef?.name || 'Valued Guest'}`, 20, 70);
-    doc.text(`Property: ${booking.hotelRef?.name}`, 20, 80);
-    
-    // AutoTable generating standard grid layout
-    const tableData = [
-      ["Check-In", formatDate(booking.checkInDate)],
-      ["Check-Out", formatDate(booking.checkOutDate)],
-      ["Guests", String(booking.guestCount || 2)],
-      ["Room Configuration", booking.roomRef?.type || 'Standard Suite']
-    ];
+      // Right Col
+      doc.setFont('helvetica', 'bold');
+      doc.text('Property:', 120, 60);
+      doc.setFont('helvetica', 'normal');
+      doc.text(`${property}`, 120, 68);
+      if (bookingObj.checkInDate) {
+         doc.text(`Check-In: ${new Date(bookingObj.checkInDate).toLocaleDateString()}`, 120, 76);
+         doc.text(`Check-Out: ${new Date(bookingObj.checkOutDate).toLocaleDateString()}`, 120, 84);
+      }
 
-    doc.autoTable({
-      startY: 95,
-      head: [['Description', 'Details']],
-      body: tableData,
-      theme: 'grid',
-      headStyles: { fillColor: [41, 128, 185] }
-    });
+      // Divider Line
+      doc.setDrawColor(200, 200, 200);
+      doc.line(14, 92, 196, 92);
 
-    const finalY = doc.lastAutoTable.finalY || 140;
+      // AutoTable
+      autoTable(doc, {
+        startY: 100,
+        head: [['Description', 'Amount Billed']],
+        body: [
+          ['Room Stay Accommodation', amount],
+          ['Taxes & Processing Fees', 'Included'],
+        ],
+        theme: 'grid',
+        headStyles: { fillColor: [212, 175, 55], textColor: [0, 0, 0], fontStyle: 'bold' },
+        alternateRowStyles: { fillColor: [250, 250, 250] },
+        styles: { fontSize: 11, cellPadding: 6 }
+      });
 
-    // Financials
-    doc.setFont("helvetica", "bold");
-    doc.text(`Total Paid: INR ${booking.totalPrice?.toLocaleString()}`, 130, finalY + 20);
+      // Total Box
+      const finalY = doc.lastAutoTable.finalY + 15;
+      doc.setFillColor(245, 245, 245);
+      doc.rect(130, finalY, 66, 22, 'F');
+      
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(14);
+      doc.setTextColor(0, 0, 0);
+      doc.text('TOTAL PAID:', 135, finalY + 14);
+      
+      doc.setTextColor(212, 175, 55);
+      doc.text(`${amount}`, 192, finalY + 14, { align: 'right' });
 
-    doc.setFont("helvetica", "italic");
-    doc.setFontSize(10);
-    doc.text("Thank you for choosing LuxeStays. Have a safe journey!", 105, 270, { align: "center" });
+      // Footer
+      doc.setTextColor(150, 150, 150);
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'italic');
+      doc.text('Thank you for choosing LuxeStays. Have a safe journey!', 105, 280, { align: 'center' });
 
-    doc.save(`LuxeStays_Invoice_${booking._id}.pdf`);
+      doc.save(`LuxeStays_Invoice_${transactionId}.pdf`);
+      toast.success("Beautiful PDF Downloaded successfully!");
+    } catch (error) {
+      console.error("PDF Generate Error: ", error);
+      toast.error("Failed to generate PDF: " + error.message);
+    }
   };
 
   if (isLoading) return <div className="text-white p-20 text-center"><FaSpinner className="animate-spin text-4xl mx-auto mb-4 text-hotel-gold"/> Loading Booking Details...</div>;

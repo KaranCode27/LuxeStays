@@ -30,8 +30,9 @@ export const createBooking = async (req, res) => {
       return res.status(400).json({ message: 'Invalid dates' });
     }
 
-    // Calculate total price based on room price
-    const totalPrice = nights * room.price;
+    // Calculate total price based on room price, guest count, and 10% tax
+    const basePrice = nights * room.price * (guestCount || 1);
+    const calculatedTotalPrice = basePrice + (basePrice * 0.1);
 
     const booking = await Booking.create({
       userRef: req.user._id, // from authMiddleware
@@ -40,7 +41,7 @@ export const createBooking = async (req, res) => {
       checkInDate,
       checkOutDate,
       guestCount,
-      totalPrice,
+      totalPrice: calculatedTotalPrice,
       guestName
     });
 

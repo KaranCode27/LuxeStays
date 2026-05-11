@@ -59,7 +59,7 @@ const hotels = [
     pricePerNight: 2500,
     amenities: ['Free WiFi', 'Restaurant', 'City View'],
     starRating: 3,
-    images: ['/images/hotels/Hotel Udai Niwas.webp']
+    images: ['/images/hotels/Hotel Udai Niwas.jpg']
   },
   // Manali
   {

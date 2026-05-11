@@ -1,5 +1,5 @@
+import 'dotenv/config';
 import express from 'express';
-import dotenv from 'dotenv';
 import cors from 'cors';
 import helmet from 'helmet';
 import mongoSanitize from 'express-mongo-sanitize';
@@ -11,12 +11,12 @@ import userRoutes from './routes/userRoutes.js';
 import hotelRoutes from './routes/hotelRoutes.js';
 import roomRoutes from './routes/roomRoutes.js';
 import bookingRoutes from './routes/bookingRoutes.js';
+import paymentRoutes from './routes/paymentRoutes.js';
 
 import reviewRoutes from './routes/reviewRoutes.js';
 import contactRoutes from './routes/contactRoutes.js';
 
 // Load env vars
-dotenv.config();
 
 // Connect to Database
 import connectDB from './config/db.js';
@@ -51,6 +51,7 @@ app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/hotels', hotelRoutes);
 app.use('/api/v1/rooms', roomRoutes);
 app.use('/api/v1/bookings', bookingRoutes);
+app.use('/api/v1/payments', paymentRoutes);
 
 app.use('/api/v1/reviews', reviewRoutes);
 app.use('/api/v1/contact', contactRoutes);
