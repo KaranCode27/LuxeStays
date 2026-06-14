@@ -1,8 +1,8 @@
 import fs from 'fs';
 import path from 'path';
 
-const hotelsDir = './Hotels/Hotels';
-const targetDir = './HotelBookingWebsite/public/images/hotels';
+const hotelsDir = '../assets/hotel-images';
+const targetDir = '../frontend/public/images/hotels';
 
 if (!fs.existsSync(targetDir)) {
     fs.mkdirSync(targetDir, { recursive: true });

@@ -1,15 +1,21 @@
-# Dependency directories
+# Root dependencies
 node_modules/
 
-# Environment variables
-.env
-.env.*.local
+# Backend dependencies & env
+backend/node_modules/
+backend/.env
+backend/*.csv
 
-# MacOS
+# Frontend dependencies & build
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+frontend/.env.local
+
+# IDE/OS specific
 .DS_Store
+.idea/
+.vscode/
 
-# Build artifacts
-HotelBookingWebsite/dist/
-
-# Sensitive data
-*.csv
+# Local plans/ roadmaps
+plans/

@@ -7,8 +7,6 @@
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
-    "client": "npm run dev --prefix HotelBookingWebsite",
-    "dev:all": "concurrently \"npm run dev\" \"npm run client\"",
     "data:import": "node utils/seeder.js",
     "data:destroy": "node utils/seeder.js -d"
   },
