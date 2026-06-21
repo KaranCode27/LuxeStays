@@ -3,24 +3,25 @@ import { motion } from 'framer-motion';
 import { FaDownload, FaFileInvoice, FaSpinner } from 'react-icons/fa';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { useGetBookingsQuery } from '../../slices/bookingsApiSlice';
+import { useGetInvoicesQuery } from '../../slices/invoicesApiSlice';
 import toast from 'react-hot-toast';
 
 const Invoice = () => {
-  const { data: bookingsResponse, isLoading } = useGetBookingsQuery();
-  const bookings = bookingsResponse?.data || [];
+  const { data: invoicesResponse, isLoading } = useGetInvoicesQuery();
+  const invoices = invoicesResponse?.data || [];
 
-  const generatePDF = (booking) => {
+  const generatePDF = (invoice) => {
     try {
       const doc = new jsPDF();
+      const booking = invoice.bookingRef || {};
       
-      // Strict string fallbacks to prevent undefined.toUpperCase crashes
+      // Fallbacks
       const name = booking.guestName || (booking.userRef && booking.userRef.name) || 'Guest';
-      const amount = `Rs. ${booking.totalPrice ? booking.totalPrice.toLocaleString() : 0}`;
-      const date = booking.createdAt ? new Date(booking.createdAt).toLocaleDateString() : 'N/A';
-      const rawId = booking._id ? String(booking._id) : 'UNKNOWN';
-      const transactionId = rawId.substring(0,8).toUpperCase();
-      const status = booking.status || 'Pending';
+      const amount = `Rs. ${invoice.amountPaid ? invoice.amountPaid.toLocaleString() : 0}`;
+      const date = invoice.createdAt ? new Date(invoice.createdAt).toLocaleDateString() : 'N/A';
+      const rawId = invoice.transactionId || invoice._id || 'UNKNOWN';
+      const transactionId = String(rawId).substring(0,8).toUpperCase();
+      const status = invoice.status || 'Paid';
 
       const property = (booking.hotelRef && booking.hotelRef.name) || 'LuxeStays Property';
       
@@ -59,7 +60,7 @@ const Invoice = () => {
       doc.text('Billed To:', 14, 60);
       doc.setFont('helvetica', 'normal');
       doc.text(`${name}`, 14, 68);
-      doc.text(`Booking Date: ${date}`, 14, 76);
+      doc.text(`Invoice Date: ${date}`, 14, 76);
       doc.text(`Status: ${status}`, 14, 84);
 
       // Right Col
@@ -150,26 +151,29 @@ const Invoice = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-white/5">
-            {bookings.map((booking) => (
-              <tr key={booking._id} className="hover:bg-white/5 transition-colors">
-                <td className="py-4 font-mono text-hotel-gold text-xs flex items-center gap-2 mt-2">
-                  <FaFileInvoice className="text-gray-500" /> {booking._id?.substring(0,8).toUpperCase()}
-                </td>
-                <td className="py-4 font-medium text-white">{booking.guestName || booking.userRef?.name || 'Guest'}</td>
-                <td className="py-4 text-gray-400">{booking.createdAt ? new Date(booking.createdAt).toLocaleDateString() : 'N/A'}</td>
-                <td className="py-4 text-white font-medium">₹{booking.totalPrice?.toLocaleString()}</td>
-                <td className="py-4">
-                  <span className={`px-2 py-1 text-xs rounded-full ${(booking.status || 'Pending').toLowerCase() === 'confirmed' ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'}`}>
-                    {booking.status || 'Pending'}
-                  </span>
-                </td>
-                <td className="py-4 text-right">
-                  <button onClick={() => generatePDF(booking)} className="text-hotel-gold hover:text-white transition-colors border border-hotel-gold/30 px-3 py-1 rounded-lg text-xs flex items-center justify-center gap-2 cursor-pointer float-right mr-4">
-                    <FaDownload /> PDF
-                  </button>
-                </td>
-              </tr>
-            ))}
+            {invoices.map((inv) => {
+              const booking = inv.bookingRef || {};
+              return (
+                <tr key={inv._id} className="hover:bg-white/5 transition-colors">
+                  <td className="py-4 font-mono text-hotel-gold text-xs flex items-center gap-2 mt-2">
+                    <FaFileInvoice className="text-gray-500" /> {inv.transactionId?.substring(0,8).toUpperCase() || inv._id?.substring(0,8).toUpperCase()}
+                  </td>
+                  <td className="py-4 font-medium text-white">{booking.guestName || booking.userRef?.name || 'Guest'}</td>
+                  <td className="py-4 text-gray-400">{inv.createdAt ? new Date(inv.createdAt).toLocaleDateString() : 'N/A'}</td>
+                  <td className="py-4 text-white font-medium">₹{inv.amountPaid?.toLocaleString()}</td>
+                  <td className="py-4">
+                    <span className={`px-2 py-1 text-xs rounded-full ${(inv.status || 'Paid').toLowerCase() === 'paid' ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'}`}>
+                      {inv.status || 'Paid'}
+                    </span>
+                  </td>
+                  <td className="py-4 text-right">
+                    <button onClick={() => generatePDF(inv)} className="text-hotel-gold hover:text-white transition-colors border border-hotel-gold/30 px-3 py-1 rounded-lg text-xs flex items-center justify-center gap-2 cursor-pointer float-right mr-4">
+                      <FaDownload /> PDF
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
         </div>

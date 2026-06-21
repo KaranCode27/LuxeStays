@@ -1,16 +1,45 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
-import { FaLock, FaCheckCircle } from 'react-icons/fa';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { FaLock, FaCheckCircle, FaSpinner } from 'react-icons/fa';
+import { useResetPasswordMutation } from '../slices/usersApiSlice';
+import toast from 'react-hot-toast';
 
 const ResetPassword = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [success, setSuccess] = useState(false);
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
-  const handleSubmit = (e) => {
+  // Extract token from query params: ?token=xyz
+  const token = new URLSearchParams(location.search).get('token') || '';
+
+  const [resetPassword, { isLoading }] = useResetPasswordMutation();
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setSuccess(true);
-    setTimeout(() => navigate('/login'), 3000);
+    if (!token) {
+      toast.error('Invalid password reset request (missing recovery token)');
+      return;
+    }
+    if (password !== confirmPassword) {
+      toast.error('Passwords do not match');
+      return;
+    }
+    if (password.length < 6) {
+      toast.error('Password must be at least 6 characters');
+      return;
+    }
+
+    try {
+      await resetPassword({ token, password }).unwrap();
+      setSuccess(true);
+      toast.success('Password changed successfully!');
+      setTimeout(() => navigate('/login'), 3000);
+    } catch (err) {
+      toast.error(err?.data?.message || err.error || 'Failed to reset password.');
+    }
   };
 
   return (
@@ -32,15 +61,31 @@ const ResetPassword = () => {
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                   <FaLock className="text-hotel-gold" />
                 </div>
-                <input type="password" className="glass-input w-full !pl-11 py-3" placeholder="New Password" required />
+                <input 
+                  type="password" 
+                  className="glass-input w-full !pl-11 py-3" 
+                  placeholder="New Password" 
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required 
+                />
               </div>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                   <FaLock className="text-hotel-gold" />
                 </div>
-                <input type="password" className="glass-input w-full !pl-11 py-3" placeholder="Confirm New Password" required />
+                <input 
+                  type="password" 
+                  className="glass-input w-full !pl-11 py-3" 
+                  placeholder="Confirm New Password" 
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required 
+                />
               </div>
-              <button type="submit" className="w-full btn-primary py-3">Reset Password</button>
+              <button type="submit" disabled={isLoading} className="w-full btn-primary py-3 flex justify-center items-center">
+                {isLoading ? <><FaSpinner className="animate-spin mr-2" /> Resetting...</> : 'Reset Password'}
+              </button>
             </form>
           </>
         )}

@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { FaUser, FaSuitcase, FaHeart, FaStar, FaBell, FaSignOutAlt } from 'react-icons/fa';
+import { FaUser, FaSuitcase, FaHeart, FaStar, FaBell, FaSignOutAlt, FaFileInvoice } from 'react-icons/fa';
 
 const UserLayout = () => {
   const navigate = useNavigate();
@@ -13,6 +13,7 @@ const UserLayout = () => {
     { name: 'Wishlist', path: '/user/wishlist', icon: FaHeart },
     { name: 'My Reviews', path: '/user/reviews', icon: FaStar },
     { name: 'Notifications', path: '/user/notifications', icon: FaBell },
+    { name: 'My Invoices', path: '/user/invoices', icon: FaFileInvoice },
   ];
 
   return (

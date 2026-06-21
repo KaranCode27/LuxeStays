@@ -3,26 +3,27 @@ import { motion } from 'framer-motion';
 import { FaFilePdf, FaEnvelope, FaSpinner } from 'react-icons/fa';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { useGetMyBookingsQuery } from '../../slices/bookingsApiSlice';
+import { useGetMyInvoicesQuery } from '../../slices/invoicesApiSlice';
 import toast from 'react-hot-toast';
 
 const UserInvoice = () => {
-  const { data: bookingsResponse, isLoading } = useGetMyBookingsQuery();
-  const invoices = bookingsResponse?.data || [];
+  const { data: invoicesResponse, isLoading } = useGetMyInvoicesQuery();
+  const invoices = invoicesResponse?.data || [];
 
   const handleEmailClick = () => {
     toast.success('Invoice copy sent to your registered email!');
   };
 
-  const generatePDF = (booking) => {
+  const generatePDF = (invoice) => {
     const doc = new jsPDF();
+    const booking = invoice.bookingRef || {};
     
-    const name = booking.guestName || booking.userRef?.name || 'Guest';
-    const amount = `Rs. ${booking.totalPrice?.toLocaleString()}`;
-    const date = booking.createdAt ? new Date(booking.createdAt).toLocaleDateString() : 'N/A';
-    const transactionId = booking._id?.substring(0,8).toUpperCase();
+    const name = booking.guestName || 'Guest';
+    const amount = `Rs. ${invoice.amountPaid?.toLocaleString()}`;
+    const date = invoice.createdAt ? new Date(invoice.createdAt).toLocaleDateString() : 'N/A';
+    const transactionId = invoice.transactionId?.substring(0,8).toUpperCase() || invoice._id?.substring(0,8).toUpperCase();
     const property = booking.hotelRef?.name || 'LuxeStays Property';
-    const status = booking.status || 'Pending';
+    const status = invoice.status || 'Paid';
 
       // Header Background (Dark Blue)
       doc.setFillColor(15, 23, 42); 
@@ -59,7 +60,7 @@ const UserInvoice = () => {
       doc.text('Billed To:', 14, 60);
       doc.setFont('helvetica', 'normal');
       doc.text(`${name}`, 14, 68);
-      doc.text(`Booking Date: ${date}`, 14, 76);
+      doc.text(`Invoice Date: ${date}`, 14, 76);
       doc.text(`Status: ${status}`, 14, 84);
 
       // Right Col
@@ -144,10 +145,10 @@ const UserInvoice = () => {
             <tbody className="divide-y divide-white/5">
               {invoices.map((inv) => (
                 <tr key={inv._id} className="hover:bg-white/5 transition-colors">
-                  <td className="p-5 font-mono text-hotel-gold">{inv._id?.substring(0,8).toUpperCase()}</td>
-                  <td className="p-5 font-medium text-white">{inv.hotelRef?.name || 'Hotel'}</td>
+                  <td className="p-5 font-mono text-hotel-gold">{inv.transactionId?.substring(0,8).toUpperCase() || inv._id?.substring(0,8).toUpperCase()}</td>
+                  <td className="p-5 font-medium text-white">{inv.bookingRef?.hotelRef?.name || 'Hotel'}</td>
                   <td className="p-5 text-gray-400">{inv.createdAt ? new Date(inv.createdAt).toLocaleDateString() : 'N/A'}</td>
-                  <td className="p-5 text-white font-bold">₹{inv.totalPrice?.toLocaleString()}</td>
+                  <td className="p-5 text-white font-bold">₹{inv.amountPaid?.toLocaleString()}</td>
                   <td className="p-5 text-right flex justify-end gap-3">
                     <button onClick={handleEmailClick} className="bg-hotel-gold/10 text-hotel-gold hover:bg-hotel-gold hover:text-black transition-colors px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-2">
                       <FaEnvelope /> Email File

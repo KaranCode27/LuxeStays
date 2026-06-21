@@ -19,3 +19,6 @@ frontend/.env.local
 
 # Local plans/ roadmaps
 plans/
+
+# Local development logs
+backend/email_logs.txt

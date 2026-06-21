@@ -4,6 +4,8 @@ import {
   loginUser,
   logoutUser,
   getUserProfile,
+  forgotPassword,
+  resetPassword,
 } from '../controllers/authController.js';
 
 import { protect } from '../middleware/authMiddleware.js';
@@ -13,9 +15,10 @@ const router = express.Router();
 // Public Routes
 router.post('/register', registerUser);
 router.post('/login', loginUser);
+router.post('/forgot-password', forgotPassword);
+router.put('/reset-password/:resettoken', resetPassword);
 
 // Private Routes
-// Notice how we use the `protect` middleware first. If `protect` fails, it blocks `logoutUser` or `getUserProfile` from running!
 router.post('/logout', protect, logoutUser);
 router.get('/profile', protect, getUserProfile);
 

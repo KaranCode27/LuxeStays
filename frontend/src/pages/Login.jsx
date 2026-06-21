@@ -10,7 +10,8 @@ import toast from 'react-hot-toast';
 import hotelImage from '../assets/hotel_exterior_night.png';
 
 const Login = () => {
-  const { register, handleSubmit, formState: { errors } } = useForm();
+  const { register, handleSubmit, watch, formState: { errors } } = useForm();
+  const emailVal = watch('email') || '';
   const dispatch = useDispatch();
   const navigate = useNavigate();
   
@@ -130,7 +131,7 @@ const Login = () => {
                 </label>
               </div>
               <div className="text-sm">
-                <Link to="/forgot-password" className="text-hotel-gold hover:text-white transition-colors duration-200">
+                <Link to={emailVal ? `/forgot-password?email=${encodeURIComponent(emailVal)}` : '/forgot-password'} className="text-hotel-gold hover:text-white transition-colors duration-200">
                   Forgot password?
                 </Link>
               </div>

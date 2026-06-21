@@ -35,6 +35,7 @@ import BookingDetails from './pages/user/BookingDetails';
 import Wishlist from './pages/user/Wishlist';
 import UserFeedback from './pages/user/UserFeedback';
 import Notifications from './pages/user/Notifications';
+import UserInvoice from './pages/user/UserInvoice';
 
 /* Admin Layer */
 import AdminLayout from './layouts/AdminLayout';
@@ -87,8 +88,8 @@ function App() {
               <Route path="wishlist" element={<Wishlist />} />
               <Route path="reviews" element={<UserFeedback />} />
               <Route path="notifications" element={<Notifications />} />
+              <Route path="invoices" element={<UserInvoice />} />
             </Route>
-            {/* Kept invoice for legacy compat if needed, but it's redundant with bookings now */}
           </Route>
         </Route>
 

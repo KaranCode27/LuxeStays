@@ -14,7 +14,12 @@ const Payment = () => {
   const [createRazorpayOrder] = useCreateRazorpayOrderMutation();
   const [verifyRazorpayPayment] = useVerifyRazorpayPaymentMutation();
 
+  const paymentInitiated = React.useRef(false);
+
   const handleRazorpayPayment = async () => {
+    if (paymentInitiated.current) return;
+    paymentInitiated.current = true;
+
     if (!state?.bookingPayload) {
       setStatus('error');
       return;

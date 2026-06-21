@@ -45,5 +45,8 @@ const HotelSchema = new mongoose.Schema({
   timestamps: true
 });
 
+// Compound text index for high-speed server-side searches
+HotelSchema.index({ name: 'text', location: 'text' });
+
 const Hotel = mongoose.model('Hotel', HotelSchema);
 export default Hotel;

@@ -8,6 +8,31 @@ const ManageBookings = () => {
   const [selectedBooking, setSelectedBooking] = React.useState(null);
   const { data: bookingsResponse, isLoading, refetch } = useGetBookingsQuery();
   const bookings = bookingsResponse?.data || [];
+
+  // Deduplicate double booking attempts (e.g. from developer React StrictMode testing)
+  const uniqueBookings = React.useMemo(() => {
+    const map = new Map();
+    bookings.forEach((booking) => {
+      const hotelId = booking.hotelRef?._id || booking.hotelRef || '';
+      const roomId = booking.roomRef?._id || booking.roomRef || '';
+      const checkIn = booking.checkInDate ? new Date(booking.checkInDate).getTime() : 0;
+      const checkOut = booking.checkOutDate ? new Date(booking.checkOutDate).getTime() : 0;
+      const key = `${booking.userRef?._id || booking.userRef || ''}-${hotelId}-${roomId}-${checkIn}-${checkOut}`;
+
+      const existing = map.get(key);
+      if (!existing) {
+        map.set(key, booking);
+      } else {
+        const existingStatus = (existing.status || 'pending').toLowerCase();
+        const currentStatus = (booking.status || 'pending').toLowerCase();
+        // Prioritize confirmed/completed records
+        if (currentStatus === 'confirmed' || currentStatus === 'completed') {
+          map.set(key, booking);
+        }
+      }
+    });
+    return Array.from(map.values());
+  }, [bookings]);
   
   const [updateStatus] = useUpdateBookingStatusMutation();
 
@@ -68,7 +93,7 @@ const ManageBookings = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
-              {bookings.map((booking) => (
+              {uniqueBookings.map((booking) => (
                 <tr key={booking._id} className="hover:bg-white/5 transition-colors">
                   <td className="p-4 font-mono text-hotel-gold text-xs">{booking._id?.substring(0,8).toUpperCase()}</td>
                   <td className="p-4 font-medium text-white">{booking.guestName || booking.userRef?.name || 'Guest'}</td>

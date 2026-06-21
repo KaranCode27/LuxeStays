@@ -47,34 +47,33 @@ const SearchHotels = () => {
     }
   };
 
-  // Fetch hotels from our backend
-  const { data, isLoading, error } = useGetHotelsQuery({ limit: 100 });
+  // Build server-side search & sorting parameters
+  const queryParams = { limit: 100 };
+  if (searchQuery) {
+    queryParams.search = searchQuery;
+  }
+  if (sortOrder !== 'none') {
+    if (sortOrder === 'price_asc') queryParams.sort = 'pricePerNight';
+    if (sortOrder === 'price_desc') queryParams.sort = '-pricePerNight';
+    if (sortOrder === 'rating_desc') queryParams.sort = '-starRating';
+  }
+
+  // Fetch hotels from our backend dynamically
+  const { data, isLoading, error } = useGetHotelsQuery(queryParams);
   
   // Provide fallback or real data
   const hotels = data?.data || [];
 
-  // Filter logic
+  // Local interactive filter logic (stars & amenities)
   let filteredHotels = hotels.filter((hotel) => {
-    // 1. Text Search
-    const matchesDest = hotel.location?.toLowerCase().includes(searchQuery.toLowerCase()) || hotel.name?.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    // 2. Star Filter
+    // 1. Star Filter
     const matchesStars = selectedStars.length === 0 || selectedStars.includes(hotel.starRating || 0);
 
-    // 3. Amenities Filter
+    // 2. Amenities Filter
     const matchesAmenities = selectedAmenities.length === 0 || selectedAmenities.every(amenity => hotel.amenities?.includes(amenity));
 
-    return matchesDest && matchesStars && matchesAmenities;
+    return matchesStars && matchesAmenities;
   });
-
-  // Sorting Logic
-  if (sortOrder === 'price_asc') {
-    filteredHotels = [...filteredHotels].sort((a, b) => (a.pricePerNight || 0) - (b.pricePerNight || 0));
-  } else if (sortOrder === 'price_desc') {
-    filteredHotels = [...filteredHotels].sort((a, b) => (b.pricePerNight || 0) - (a.pricePerNight || 0));
-  } else if (sortOrder === 'rating_desc') {
-    filteredHotels = [...filteredHotels].sort((a, b) => (b.starRating || 0) - (a.starRating || 0));
-  }
 
   const handleStarToggle = (star) => {
     setSelectedStars(prev => prev.includes(star) ? prev.filter(s => s !== star) : [...prev, star]);

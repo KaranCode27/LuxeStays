@@ -12,9 +12,12 @@ import hotelRoutes from './routes/hotelRoutes.js';
 import roomRoutes from './routes/roomRoutes.js';
 import bookingRoutes from './routes/bookingRoutes.js';
 import paymentRoutes from './routes/paymentRoutes.js';
+import invoiceRoutes from './routes/invoiceRoutes.js';
+import notificationRoutes from './routes/notificationRoutes.js';
 
 import reviewRoutes from './routes/reviewRoutes.js';
 import contactRoutes from './routes/contactRoutes.js';
+import errorHandler from './middleware/errorHandler.js';
 
 // Load env vars
 
@@ -36,14 +39,28 @@ if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
 
+// Make req.query writable for express-mongo-sanitize in Express 5
+app.use((req, res, next) => {
+  Object.defineProperty(req, 'query', {
+    value: { ...req.query },
+    writable: true,
+    configurable: true,
+    enumerable: true
+  });
+  next();
+});
+
 // Sanitize data
-// app.use(mongoSanitize());
+app.use(mongoSanitize());
 
 // Set security headers
 app.use(helmet());
 
 // Enable CORS
-app.use(cors());
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  credentials: true
+}));
 
 // Mount routers
 app.use('/api/v1/auth', authRoutes);
@@ -52,9 +69,14 @@ app.use('/api/v1/hotels', hotelRoutes);
 app.use('/api/v1/rooms', roomRoutes);
 app.use('/api/v1/bookings', bookingRoutes);
 app.use('/api/v1/payments', paymentRoutes);
+app.use('/api/v1/invoices', invoiceRoutes);
+app.use('/api/v1/notifications', notificationRoutes);
 
 app.use('/api/v1/reviews', reviewRoutes);
 app.use('/api/v1/contact', contactRoutes);
+
+// Register Global Error Handler Middleware
+app.use(errorHandler);
 
 app.get('/', (req, res) => {
   res.send('LuxeStays API is running...');

@@ -7,6 +7,7 @@ import {
   deleteHotel
 } from '../controllers/hotelController.js';
 import { protect, admin } from '../middleware/authMiddleware.js';
+import { uploadSingleImage, uploadToCloudinary } from '../middleware/uploadMiddleware.js';
 
 import roomRouter from './roomRoutes.js';
 import reviewRouter from './reviewRoutes.js';
@@ -19,11 +20,11 @@ router.use('/:hotelId/reviews', reviewRouter);
 
 router.route('/')
   .get(getHotels)
-  .post(protect, admin, createHotel);
+  .post(protect, admin, uploadSingleImage, uploadToCloudinary, createHotel);
 
 router.route('/:id')
   .get(getHotelById)
-  .put(protect, admin, updateHotel)
+  .put(protect, admin, uploadSingleImage, uploadToCloudinary, updateHotel)
   .delete(protect, admin, deleteHotel);
 
 export default router;

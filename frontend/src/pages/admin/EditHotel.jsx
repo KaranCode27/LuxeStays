@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FaUpload, FaArrowLeft, FaSpinner } from 'react-icons/fa';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useGetHotelDetailsQuery, useUpdateHotelMutation } from '../../slices/hotelsApiSlice';
+import { useGetHotelDetailsQuery, useUpdateHotelMutation, useDeleteHotelMutation } from '../../slices/hotelsApiSlice';
 import toast from 'react-hot-toast';
 
 const EditHotel = () => {
@@ -11,6 +11,7 @@ const EditHotel = () => {
 
   const { data: hotelResponse, isLoading: isLoadingDetails } = useGetHotelDetailsQuery(id);
   const [updateHotel, { isLoading: isUpdating }] = useUpdateHotelMutation();
+  const [deleteHotel, { isLoading: isDeleting }] = useDeleteHotelMutation();
 
   const [name, setName] = useState('');
   const [location, setLocation] = useState('');
@@ -68,6 +69,18 @@ const EditHotel = () => {
     }
   };
 
+  const handleDelete = async () => {
+    if (window.confirm('Are you sure you want to delete this hotel?')) {
+      try {
+        await deleteHotel(id).unwrap();
+        toast.success('Hotel deleted successfully');
+        navigate('/admin/hotels');
+      } catch (err) {
+        toast.error(err?.data?.message || 'Failed to delete hotel');
+      }
+    }
+  };
+
   if (isLoadingDetails) {
      return <div className="p-20 text-center"><FaSpinner className="animate-spin text-hotel-gold text-4xl mx-auto" /></div>;
   }
@@ -83,8 +96,13 @@ const EditHotel = () => {
           <h1 className="text-3xl font-bold text-white">Edit Property <span className="text-hotel-gold text-xl block sm:inline mt-1 sm:mt-0 sm:ml-2">#{id || '102'}</span></h1>
           <p className="text-gray-400 mt-1">Make modifications to your existing listings.</p>
         </div>
-        <button className="bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-colors font-medium px-4 py-2 rounded-lg text-sm border border-red-500/30">
-          Delete Listing
+        <button 
+          type="button"
+          onClick={handleDelete}
+          disabled={isDeleting}
+          className="bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-colors font-medium px-4 py-2 rounded-lg text-sm border border-red-500/30"
+        >
+          {isDeleting ? 'Deleting...' : 'Delete Listing'}
         </button>
       </div>
 

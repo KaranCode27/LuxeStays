@@ -8,7 +8,7 @@ const InvoiceSchema = new mongoose.Schema({
   },
   paymentMethod: {
     type: String,
-    enum: ['Credit Card', 'PayPal', 'Stripe', 'Bank Transfer'],
+    enum: ['Credit Card', 'PayPal', 'Stripe', 'Bank Transfer', 'Razorpay'],
     required: [true, 'Payment method is required']
   },
   transactionId: {
